@@ -9,6 +9,8 @@ import "@openzeppelin/contracts/governance/extensions/GovernorVotesQuorumFractio
 import "@openzeppelin/contracts/governance/extensions/GovernorTimelockControl.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 
+import "hardhat/console.sol";
+
 contract MyGovernor is
     Governor,
     GovernorSettings,
@@ -20,28 +22,34 @@ contract MyGovernor is
 {
     bytes32 public constant CANCEL_ROLE = keccak256("CANCEL_ROLE");
 
-    constructor(
-        IVotes _token,
-        TimelockController _timelock,
-        address[] memory cancelRoleAddresses,
-        address defaultAdmin,
-        uint256 _votingDelay,
-        uint256 _votingPeriod,
-        uint256 _proposalThreshold,
-        uint256 _quorumFraction
-    )
-        Governor("MyGovernor")
-        GovernorSettings(_votingDelay, _votingPeriod, _proposalThreshold)
-        GovernorVotes(_token)
-        GovernorVotesQuorumFraction(_quorumFraction)
-        GovernorTimelockControl(_timelock)
-    {
-        for (uint256 i = 0; i < cancelRoleAddresses.length; i++) {
-            _setupRole(CANCEL_ROLE, cancelRoleAddresses[i]);
-        }
-        _setRoleAdmin(CANCEL_ROLE, DEFAULT_ADMIN_ROLE);
-        _setupRole(DEFAULT_ADMIN_ROLE, defaultAdmin);
+constructor(
+    IVotes _token,
+    TimelockController _timelock,
+    address[] memory cancelRoleAddresses,
+    uint256 _votingDelay,
+    uint256 _votingPeriod,
+    uint256 _proposalThreshold,
+    uint256 _quorumFraction
+)
+    Governor("MyGovernor")
+    GovernorSettings(_votingDelay, _votingPeriod, _proposalThreshold)
+    GovernorVotes(_token)
+    GovernorVotesQuorumFraction(_quorumFraction)
+    GovernorTimelockControl(_timelock)
+{
+    // Revoke the DEFAULT_ADMIN_ROLE from the zero address
+    _revokeRole(DEFAULT_ADMIN_ROLE, address(0));
+
+    // Grant the DEFAULT_ADMIN_ROLE to the timelock
+    _grantRole(DEFAULT_ADMIN_ROLE, address(_timelock));
+
+    _setRoleAdmin(CANCEL_ROLE, DEFAULT_ADMIN_ROLE);
+
+    for (uint256 i = 0; i < cancelRoleAddresses.length; i++) {
+        _setupRole(CANCEL_ROLE, cancelRoleAddresses[i]);
     }
+}
+
 
     // The following functions are overrides required by Solidity.
 

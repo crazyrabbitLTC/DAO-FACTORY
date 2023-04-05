@@ -27,14 +27,12 @@ describe("Unit tests", function () {
       timelock,
       governorFactory,
       cancelRoleAddresses,
-      defaultAdmin,
       votingDelay, votingPeriod, proposalThreshold, quorumFraction } = this.ERC20_Governor_Fixture;
 
       this.governor = <MyGovernor>await governorFactory.connect(admin).deploy(
         token.address,
         timelock.address,
         cancelRoleAddresses,
-        defaultAdmin,
         votingDelay,
         votingPeriod,
         proposalThreshold,

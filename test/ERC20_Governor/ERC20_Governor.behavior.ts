@@ -12,18 +12,21 @@ export function erc20GovernorBehaviorTests(): void {
       expect(timelockAddress).to.equal(this.ERC20_Governor_Fixture.timelock.address);
     });
 
-    // it("should set the correct cancel role addresses", async function () {
-    //   for (const [index, cancelRoleAddress] of this.ERC20_Governor_Fixture.cancelRoleAddresses.entries()) {
-    //     const roleAddress = await this.governor.getRoleMember(this.governor.CANCEL_ROLE, index);
-    //     expect(roleAddress).to.equal(cancelRoleAddress);
-    //   }
-    // });
-
-
-    it("should set the correct default admin", async function () {
-      const defaultAdmin = await this.governor.getRoleAdmin(await this.governor.CANCEL_ROLE());
-      expect(defaultAdmin).to.equal(this.ERC20_Governor_Fixture.defaultAdmin);
+    it("should set the correct cancel role addresses", async function () {
+      for (const [_, cancelRoleAddress] of this.ERC20_Governor_Fixture.cancelRoleAddresses.entries()) {
+        const cancelRole = await this.governor.CANCEL_ROLE();
+        const hasRole = await this.governor.hasRole(cancelRole, cancelRoleAddress);
+        expect(hasRole).to.equal(true);
+      }
     });
+
+    it("should set the correct default admin: (timelock)", async function () {
+      const defaultAdminRole = await this.governor.DEFAULT_ADMIN_ROLE();
+      const timelockAddress = this.ERC20_Governor_Fixture.timelock.address;
+      const hasRole = await this.governor.hasRole(defaultAdminRole, timelockAddress);
+      expect(hasRole).to.be.true;
+    });
+
 
     it("should set the correct voting delay", async function () {
       const votingDelay = await this.governor.votingDelay();
